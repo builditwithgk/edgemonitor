@@ -1,0 +1,25 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# trained model artifacts -- regenerate via training/train_padim.py, see README
+models/
+*.onnx
+*_calibration.json
+*.bundle
+
+# downloaded/generated datasets -- regenerate via training/download_bottle.py
+data/
+training/datasets/
+training/results/
+training/*.log
+
+# runtime state
+*.db
+*.log
+.env
+
+# OS/editor
+.DS_Store
+Thumbs.db

@@ -1,0 +1,71 @@
+services:
+  fleet:
+    build: ./fleet_service
+    ports:
+      - "9000:9000"
+
+  site1:
+    build: ./edge_node
+    ports:
+      - "8001:8000"
+    environment:
+      LW_FLEET_URL: http://fleet:9000
+      LW_DEVICE_ID: site-1
+      LW_ADVERTISE_HOST: site1
+      LW_THRESHOLD: "0.25"
+      LW_ROLLBACK_FP_CEILING: "0.05"
+      LW_HOLDOUT_DIR: /app/data/holdout
+    volumes:
+      - ./edge_node/models:/app/models:ro
+      - ./data/holdout:/app/data/holdout:ro
+    depends_on:
+      - fleet
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2g
+
+  site2:
+    build: ./edge_node
+    ports:
+      - "8002:8000"
+    environment:
+      LW_FLEET_URL: http://fleet:9000
+      LW_DEVICE_ID: site-2
+      LW_ADVERTISE_HOST: site2
+      LW_THRESHOLD: "0.25"
+      LW_ROLLBACK_FP_CEILING: "0.05"
+      LW_HOLDOUT_DIR: /app/data/holdout
+    volumes:
+      - ./edge_node/models:/app/models:ro
+      - ./data/holdout:/app/data/holdout:ro
+    depends_on:
+      - fleet
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2g
+
+  site3:
+    build: ./edge_node
+    ports:
+      - "8003:8000"
+    environment:
+      LW_FLEET_URL: http://fleet:9000
+      LW_DEVICE_ID: site-3
+      LW_ADVERTISE_HOST: site3
+      LW_THRESHOLD: "0.25"
+      LW_ROLLBACK_FP_CEILING: "0.05"
+      LW_HOLDOUT_DIR: /app/data/holdout
+    volumes:
+      - ./edge_node/models:/app/models:ro
+      - ./data/holdout:/app/data/holdout:ro
+    depends_on:
+      - fleet
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2g
