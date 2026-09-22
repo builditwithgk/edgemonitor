@@ -38,12 +38,17 @@ Each piece is self-contained; the edge node is the one you'll run most.
 ```bash
 cd edge_node
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\activate       # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 Repeat for `feeder/`, `fleet_service/`, and `reject_sink/` (each has its own
 `requirements.txt`).
+
+**Before running anything below: train a model first** — jump to "Train the
+real model" further down and come back. Without it, `uvicorn` starts fine,
+but `/health` and `/inspect` return `500 NO_SUCHFILE` the moment they try
+to load a model that doesn't exist yet.
 
 ## Run the edge node
 
@@ -100,6 +105,9 @@ edge node has no runtime dependency on the fleet (F13).
 
 ## Apply a model update while air-gapped (F13, local bundle)
 
+Requires a trained model already in `edge_node/models/` — see "Train the
+real model" below if you haven't run that yet.
+
 For a site with no fleet connectivity at all (`LW_FLEET_URL` unset), updates
 arrive as a signed bundle carried in on removable media or a one-way gateway
 transfer, not pulled over the network:
@@ -153,16 +161,21 @@ default) and compare p50/p95/p99 and throughput.
 ```bash
 cd training
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\activate       # macOS/Linux: source .venv/bin/activate
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install anomalib numpy onnx onnxruntime onnxscript
 python download_bottle.py   # ~163 MVTec 'bottle' images, not the 5.27GB full archive
 python train_padim.py       # fits in seconds (no gradient descent), exports ONNX + calibration.json
 ```
 
-Output: `edge_node/models/model.onnx` + `edge_node/models/calibration.json`,
-and `data/holdout/` refreshed with real `test/good` images. `edge_node/app/inference.py`
-loads both automatically — no edge node code changes needed to retrain.
+Output: `edge_node/models/padim-bottle-v1.onnx` +
+`edge_node/models/padim-bottle-v1_calibration.json` (version-named, so
+multiple models can coexist — see F8/F11 rollback tests in `FINDINGS.md`
+for why), and `data/holdout/` refreshed with real `test/good` images.
+`edge_node/app/inference.py` loads whichever version is active automatically
+— no edge node code changes needed to retrain. Pass `--version-name` to
+`train_padim.py` to produce a differently-named model instead of overwriting
+the default.
 
 Both scripts disable TLS certificate verification for their one external
 download each (MVTec image mirror; pretrained ResNet18 backbone weights).
